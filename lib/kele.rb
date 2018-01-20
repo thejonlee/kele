@@ -1,10 +1,14 @@
 require 'httparty'
 require 'json'
 require_relative './roadmap'
+require_relative './messages'
+require_relative './checkpoints'
 
 class Kele
   include HTTParty
   include Roadmap
+  include Messages
+  include Checkpoints
   base_uri 'https://www.bloc.io/api/v1/'
 
   def initialize(email, password)
@@ -22,26 +26,5 @@ class Kele
   def get_mentor_availability(mentor_id)
     response = self.class.get("/mentors/#{mentor_id}/student_availability", headers: { "authorization" => @auth_token })
     @availability = JSON.parse(response.body)
-  end
-
-  def get_messages(page_number = nil)
-    if page_number == nil
-      response = self.class.get("/message_threads?1=", headers: { "authorization" => @auth_token })
-    else
-      response = self.class.get("/message_threads?#{page_number}=", headers: { "authorization" => @auth_token })
-    end
-    @messages = JSON.parse(response.body)
-  end
-
-  def create_message(sender, recipient_id, subject, text)
-    response = self.class.post(
-      "/messages",
-      body: { "sender": sender, "recipient_id": recipient_id, "subject": subject, "stripped-text": text },
-      headers: { "authorization" => @auth_token })
-    if response.success?
-      puts "Message sent."
-    else
-      puts response
-    end
   end
 end
